@@ -189,10 +189,21 @@ export default function Home() {
     // Fit the board into the space above the floating toolbar, not behind it.
     const t = toolbox.current?.getBoundingClientRect();
     const h = t ? t.top - r.top : r.height;
-    const scale = Math.min((r.width - 48) / 1760, (h - 24) / 1460, 1);
+    // Frame the drawn content (row labels at x=0 to the right quadrants' edge
+    // at x=1700; column labels at y=130 to the bottom quadrants' edge at
+    // y=1430), not the canvas's empty padding around it.
+    const left = 0,
+      right = 1700,
+      top = 130,
+      bottom = 1430;
+    const scale = Math.min(
+      (r.width - 48) / (right - left),
+      (h - 48) / (bottom - top),
+      1,
+    );
     setView({
-      x: (r.width - 1760 * scale) / 2,
-      y: (h - 1460 * scale) / 2,
+      x: (r.width - (right - left) * scale) / 2 - left * scale,
+      y: (h - (bottom - top) * scale) / 2 - top * scale,
       scale,
     });
   }
@@ -305,11 +316,11 @@ export default function Home() {
     }
     const x = Math.max(
         24,
-        Math.min(1458, g.task.x + dx / viewRef.current.scale),
+        Math.min(1438, g.task.x + dx / viewRef.current.scale),
       ),
-      y = Math.max(105, Math.min(1236, g.task.y + dy / viewRef.current.scale));
+      y = Math.max(105, Math.min(1246, g.task.y + dy / viewRef.current.scale));
     setTasks((prev) => prev.map((t) => (t.id === g.id ? { ...t, x, y } : t)));
-    setOver((y + 65 >= 795 ? 2 : 0) + (x + 137 >= 880 ? 1 : 0));
+    setOver((y + 65 >= 800 ? 2 : 0) + (x + 137 >= 870 ? 1 : 0));
   }
   async function end() {
     const g = gesture.current;
@@ -322,9 +333,9 @@ export default function Home() {
       return;
     }
     const moved = tasksRef.current.find((t) => t.id === g.id)!;
-    const q = (moved.y + 65 >= 795 ? 2 : 0) + (moved.x + 137 >= 880 ? 1 : 0);
-    const x = Math.max(q % 2 ? 910 : 48, Math.min(q % 2 ? 1442 : 582, moved.x)),
-      y = Math.max(q >= 2 ? 860 : 230, Math.min(q >= 2 ? 1236 : 606, moved.y));
+    const q = (moved.y + 65 >= 800 ? 2 : 0) + (moved.x + 137 >= 870 ? 1 : 0);
+    const x = Math.max(q % 2 ? 890 : 48, Math.min(q % 2 ? 1422 : 582, moved.x)),
+      y = Math.max(q >= 2 ? 870 : 230, Math.min(q >= 2 ? 1246 : 606, moved.y));
     try {
       await persist({ ...moved, x, y, q });
     } catch (e) {
@@ -650,7 +661,7 @@ export default function Home() {
             <section
               key={q.name}
               className={`quadrant q${i} ${over === i ? "drop-active" : ""}`}
-              style={{ left: i % 2 ? 900 : 40, top: i >= 2 ? 800 : 170 }}
+              style={{ left: i % 2 ? 880 : 40, top: i >= 2 ? 810 : 170 }}
             >
               <div className="quad-heading">
                 <button

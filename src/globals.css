@@ -148,16 +148,51 @@ article:focus-visible {
   padding: 12px 17px;
   font-size: 14px;
   font-weight: 650;
-  box-shadow: 0 2px 4px #243cef20;
+  /* A darker lip underneath that the button sinks into when pressed. */
+  box-shadow:
+    0 2px 0 #1622a0,
+    0 3px 8px #243cef30;
+  transition:
+    background 0.15s,
+    transform 0.2s cubic-bezier(0.3, 1.4, 0.5, 1),
+    box-shadow 0.2s cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 .primary:hover {
   background: #172bc7;
+  box-shadow:
+    0 2px 0 #1622a0,
+    0 4px 12px #243cef38;
+}
+.primary:active:not(:disabled) {
+  background: #1426b0;
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 0 #1622a0,
+    0 1px 3px #243cef30;
+  transition-duration: 0.06s;
 }
 .plain {
   font-size: 14px;
   color: #536071;
   background: none;
-  border: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 7px 10px;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    box-shadow 0.15s,
+    transform 0.1s;
+}
+.plain:hover {
+  background: #fff;
+  border-color: #dce1e8;
+  box-shadow: 0 2px 6px #24324712;
+}
+.plain:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: none;
+  background: #f7f8fa;
 }
 .plain b {
   background: #f0f2f6;
@@ -330,8 +365,11 @@ article:focus-visible {
 }
 .task-card.dragging {
   cursor: grabbing;
-  box-shadow: 0 16px 40px #24324730;
-  border: 2px solid #243cef;
+  /* Thicken the border with a ring, not border-width, so the text doesn't shift. */
+  box-shadow:
+    0 0 0 1px #243cef,
+    0 16px 40px #24324730;
+  border-color: #243cef;
   rotate: -1deg;
 }
 .card-top {
@@ -724,13 +762,13 @@ textarea {
   width: 820px;
 }
 .column-label.later {
-  left: 900px;
+  left: 880px;
 }
 .row-label {
   height: 620px;
 }
 .row-label.less-important {
-  top: 800px;
+  top: 810px;
 }
 
 /* Sources + extra links */
@@ -1257,9 +1295,28 @@ button.chip {
   border: 0;
   background: #d63c42;
   color: #fff;
+  /* Same pressable lip as .primary, in red. */
+  box-shadow:
+    0 2px 0 #9c2328,
+    0 3px 8px #d63c4230;
+  transition:
+    background 0.15s,
+    transform 0.2s cubic-bezier(0.3, 1.4, 0.5, 1),
+    box-shadow 0.2s cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 .toss-actions .toss:hover {
   background: #bf2f35;
+  box-shadow:
+    0 2px 0 #9c2328,
+    0 4px 12px #d63c4238;
+}
+.toss-actions .toss:active {
+  background: #b02a30;
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 0 #9c2328,
+    0 1px 3px #d63c4230;
+  transition-duration: 0.06s;
 }
 
 @media (prefers-reduced-motion: reduce) {
