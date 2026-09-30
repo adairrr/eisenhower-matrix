@@ -160,6 +160,7 @@ export default function Home() {
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const viewport = useRef<HTMLDivElement>(null),
+    toolbox = useRef<HTMLDivElement>(null),
     tasksRef = useRef(tasks),
     viewRef = useRef(view),
     gesture = useRef<any>(null),
@@ -185,10 +186,13 @@ export default function Home() {
   function fit() {
     const r = viewport.current?.getBoundingClientRect();
     if (!r) return;
-    const scale = Math.min((r.width - 48) / 1760, (r.height - 48) / 1460, 1);
+    // Fit the board into the space above the floating toolbar, not behind it.
+    const t = toolbox.current?.getBoundingClientRect();
+    const h = t ? t.top - r.top : r.height;
+    const scale = Math.min((r.width - 48) / 1760, (h - 24) / 1460, 1);
     setView({
       x: (r.width - 1760 * scale) / 2,
-      y: (r.height - 1460 * scale) / 2,
+      y: (h - 1460 * scale) / 2,
       scale,
     });
   }
@@ -862,7 +866,7 @@ export default function Home() {
         </div>
       </div>
       <footer>
-        <div className="toolbox">
+        <div className="toolbox" ref={toolbox}>
           <button
             className={mode === "select" ? "active" : ""}
             aria-label="Select and move cards"
