@@ -26,6 +26,10 @@ import {
   type Link,
   quadrants,
   positionFor,
+  quadrantAt,
+  snapTo,
+  QUAD,
+  CARD,
 } from "@/lib/tasks";
 import {
   ageInfo,
@@ -314,13 +318,23 @@ export default function Home() {
       setView({ ...g.view, x: g.view.x + dx, y: g.view.y + dy });
       return;
     }
+    // While dragging, keep the card on the board; it snaps into a box on drop.
     const x = Math.max(
-        24,
-        Math.min(1438, g.task.x + dx / viewRef.current.scale),
+        QUAD.x[0],
+        Math.min(
+          QUAD.x[1] + QUAD.w - CARD.w,
+          g.task.x + dx / viewRef.current.scale,
+        ),
       ),
-      y = Math.max(105, Math.min(1246, g.task.y + dy / viewRef.current.scale));
+      y = Math.max(
+        QUAD.y[0],
+        Math.min(
+          QUAD.y[1] + QUAD.h - CARD.h,
+          g.task.y + dy / viewRef.current.scale,
+        ),
+      );
     setTasks((prev) => prev.map((t) => (t.id === g.id ? { ...t, x, y } : t)));
-    setOver((y + 65 >= 800 ? 2 : 0) + (x + 137 >= 870 ? 1 : 0));
+    setOver(quadrantAt(x, y));
   }
   async function end() {
     const g = gesture.current;
@@ -333,9 +347,8 @@ export default function Home() {
       return;
     }
     const moved = tasksRef.current.find((t) => t.id === g.id)!;
-    const q = (moved.y + 65 >= 800 ? 2 : 0) + (moved.x + 137 >= 870 ? 1 : 0);
-    const x = Math.max(q % 2 ? 890 : 48, Math.min(q % 2 ? 1422 : 582, moved.x)),
-      y = Math.max(q >= 2 ? 870 : 230, Math.min(q >= 2 ? 1246 : 606, moved.y));
+    const q = quadrantAt(moved.x, moved.y);
+    const { x, y } = snapTo(q, moved.x, moved.y);
     try {
       await persist({ ...moved, x, y, q });
     } catch (e) {
@@ -661,7 +674,7 @@ export default function Home() {
             <section
               key={q.name}
               className={`quadrant q${i} ${over === i ? "drop-active" : ""}`}
-              style={{ left: i % 2 ? 880 : 40, top: i >= 2 ? 810 : 170 }}
+              style={{ left: QUAD.x[i % 2], top: QUAD.y[i >= 2 ? 1 : 0] }}
             >
               <div className="quad-heading">
                 <button
