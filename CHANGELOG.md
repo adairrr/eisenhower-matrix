@@ -4,6 +4,10 @@ One short bullet per change, newest release first. Add yours under **Unreleased*
 
 ## Unreleased
 
+- Keyboard shortcuts: N or 1–4 adds a task; E, X or ⌫ edits, completes or deletes the card under your pointer (thanks @adairrr)
+- V and H switch tools, + and - zoom, 0 resets the view, C opens the done list
+- Press ? for a sheet of every shortcut
+
 ## 0.2.0 — 2026-10-01
 
 - Update button: new releases install from the board, then the page reloads itself
