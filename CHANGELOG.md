@@ -4,6 +4,8 @@ One short bullet per change, newest release first. Add yours under **Unreleased*
 
 ## Unreleased
 
+## 0.2.0 — 2026-10-01
+
 - Update button: new releases install from the board, then the page reloads itself
 - Card animations: a sprout when you add, confetti when you finish, a crumple when you toss
 - Deadline labels that warm up as the date gets close
