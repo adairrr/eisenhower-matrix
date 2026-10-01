@@ -82,6 +82,8 @@ function isTyping(target: EventTarget | null) {
       ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName))
   );
 }
+// Stands in for the four keys behind ⌥1-4, labelled for the viewer's layout.
+const QUAD_KEYS = "quad-keys";
 const SHORTCUTS: { title: string; keys: [string[], string][] }[] = [
   {
     title: "Tasks",
@@ -114,7 +116,7 @@ const SHORTCUTS: { title: string; keys: [string[], string][] }[] = [
   {
     title: "In the editor",
     keys: [
-      [["⌥", "1–4"], "Move the task to that quadrant"],
+      [["⌥", QUAD_KEYS], "Move the task to that quadrant"],
       [["⌘", "Enter"], "Save"],
     ],
   },
@@ -264,6 +266,8 @@ export default function Home() {
     [bump, setBump] = useState(false),
     [openDone, setOpenDone] = useState<string | null>(null),
     [help, setHelp] = useState(false),
+    // What the physical 1-4 keys type on this keyboard layout, for labels.
+    [digitKeys, setDigitKeys] = useState(["1", "2", "3", "4"]),
     [drafts, setDrafts] = useState<Drafts>(loadDrafts),
     [now, setNow] = useState(() => Date.now());
   const cardEls = useRef(new Map<string, HTMLElement>()),
@@ -313,6 +317,16 @@ export default function Home() {
       d ? { ...t, ...Object.fromEntries(EDITABLE.map((k) => [k, d[k]])) } : t,
     );
   }
+  useEffect(() => {
+    // Chromium only, in secure contexts; elsewhere the labels stay 1-4.
+    (navigator as any).keyboard
+      ?.getLayoutMap?.()
+      .then((m: Map<string, string>) => {
+        const keys = [1, 2, 3, 4].map((n) => m.get(`Digit${n}`));
+        if (keys.every(Boolean)) setDigitKeys(keys as string[]);
+      })
+      .catch(() => {});
+  }, []);
   useEffect(() => {
     const tick = setInterval(() => setNow(Date.now()), 5 * 60_000);
     return () => clearInterval(tick);
@@ -668,7 +682,7 @@ export default function Home() {
     else if (key === "-" || key === "_") run = () => zoom(0.8);
     else if (e.repeat) return;
     else if (key === "?") run = () => setHelp(true);
-    else if (key === "0" || (e.shiftKey && e.code === "Digit1")) run = fit;
+    else if (key === "0") run = fit;
     else if (/^[1-4]$/.test(key) && ready) run = () => add(+key - 1);
     else if (key === "n" && ready) run = () => add();
     else if (key === "c") run = () => setCompleted(true);
@@ -1207,7 +1221,7 @@ export default function Home() {
                           role="radio"
                           aria-checked={edit.q === i}
                           className={`qp qp-${i} ${edit.q === i ? "on" : ""}`}
-                          title={`${q.name} (⌥${i + 1})`}
+                          title={`${q.name} (⌥${digitKeys[i]})`}
                           aria-keyshortcuts={`Alt+${i + 1}`}
                           onClick={() => setEdit({ ...edit, q: i })}
                         >
@@ -1423,9 +1437,17 @@ export default function Home() {
                     <div key={label}>
                       <dt>{label}</dt>
                       <dd>
-                        {keys.map((k) => (
-                          <kbd key={k}>{k}</kbd>
-                        ))}
+                        {keys
+                          .flatMap((k) =>
+                            k !== QUAD_KEYS
+                              ? [k]
+                              : digitKeys.join("") === "1234"
+                                ? ["1–4"]
+                                : digitKeys,
+                          )
+                          .map((k) => (
+                            <kbd key={k}>{k}</kbd>
+                          ))}
                       </dd>
                     </div>
                   ))}
