@@ -4,7 +4,8 @@ One short bullet per change, newest release first. Add yours under **Unreleased*
 
 ## Unreleased
 
-- Tossing a task: the paper ball and the bin are darker and outlined, so you can see them on every quadrant
+- Tossing a task: the card now crumples into a real paper ball, and a bin pops up out of the floor to catch it
+- The ball and the bin are darker and outlined, so you can see them on every quadrant
 
 ## 0.3.0 — 2026-10-01
 

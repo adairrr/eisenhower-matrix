@@ -197,6 +197,38 @@ export function Sprout() {
   );
 }
 
+/** The crumpled card: a faceted paper ball, drawn over the card as it shrinks. */
+export function PaperBall() {
+  return (
+    <svg className="paper-ball" viewBox="-80 -80 160 160" aria-hidden="true">
+      <polygon points="-10,-68 18,-72 44,-56 28,-30 -8,-20" fill="#f7f9fb" />
+      <polygon points="44,-56 64,-34 60,-8 20,6 28,-30" fill="#dde2e9" />
+      <polygon points="60,-8 72,14 56,42 20,6" fill="#b7bfcb" />
+      <polygon points="56,42 34,62 6,58 -22,22 20,6" fill="#9da7b5" />
+      <polygon points="6,58 -18,70 -46,54 -22,22" fill="#b3bcc8" />
+      <polygon points="-46,54 -66,30 -58,4 -22,22" fill="#cdd3dc" />
+      <polygon points="-58,4 -70,-22 -50,-48 -8,-20 -22,22" fill="#e7ebf0" />
+      <polygon points="-50,-48 -30,-56 -10,-68 -8,-20" fill="#ffffff" />
+      <polygon points="-8,-20 28,-30 20,6 -22,22" fill="#eef1f5" />
+      <path
+        d="M-8 -20 L28 -30 L20 6 L-22 22 Z M-8 -20 L-10 -68 M-8 -20 L-50 -48 M28 -30 L44 -56 M20 6 L60 -8 M20 6 L56 42 M-22 22 L6 58 M-22 22 L-46 54 M-22 22 L-58 4"
+        stroke="#6b7684"
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <polygon
+        points="-10,-68 18,-72 44,-56 64,-34 60,-8 72,14 56,42 34,62 6,58 -18,70 -46,54 -66,30 -58,4 -70,-22 -50,-48 -30,-56"
+        fill="none"
+        stroke="#3b4450"
+        strokeWidth="7"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function Bin() {
   return (
     <svg viewBox="0 0 44 50" width="44" height="50" aria-hidden="true">
