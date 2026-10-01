@@ -41,6 +41,7 @@ import {
   Flame,
   FlameDefs,
   Hourglass,
+  PaperBall,
   prefersReducedMotion,
   Sparkle,
   Sprout,
@@ -507,7 +508,13 @@ export default function Home() {
     // The bin sits just past the card's bottom-right corner (see .toss-bin).
     const dx = el.offsetWidth / 2 + 44,
       dy = el.offsetHeight / 2 - 10;
-    const ball = "#eef0f4";
+    // Past the squish the card itself fades out and <PaperBall> (a child, so it
+    // inherits the flight) takes over.
+    const gone = {
+      background: "transparent",
+      borderColor: "transparent",
+      boxShadow: "none",
+    };
     const crumple = el.animate(
       [
         { offset: 0, transform: "none", borderRadius: "9px" },
@@ -521,33 +528,34 @@ export default function Home() {
           offset: 0.56,
           transform: "scale(.24) rotate(40deg)",
           borderRadius: "50%",
-          background: ball,
+          ...gone,
         },
         {
           offset: 0.72,
           transform: `translate(${dx * 0.5}px, -90px) scale(.2) rotate(160deg)`,
           borderRadius: "50%",
-          background: ball,
+          ...gone,
         },
         {
           offset: 0.9,
           transform: `translate(${dx}px, ${dy - 24}px) scale(.16) rotate(300deg)`,
           borderRadius: "50%",
-          background: ball,
+          ...gone,
           opacity: 1,
         },
         {
           offset: 1,
           transform: `translate(${dx}px, ${dy}px) scale(.1) rotate(330deg)`,
           borderRadius: "50%",
-          background: ball,
+          ...gone,
           opacity: 0,
         },
       ],
       { duration: 1250, easing: "cubic-bezier(.45,0,.55,1)", fill: "forwards" },
     );
     await crumple.finished;
-    await wait(350);
+    // Let the bin drop back into the floor before the card is removed.
+    await wait(750);
     try {
       await persist(t, true);
     } catch (e) {
@@ -939,6 +947,7 @@ export default function Home() {
                       </button>
                     </span>
                   </div>
+                  {fx === "tossing" && <PaperBall />}
                   {fx === "completing" &&
                     CONFETTI.map((c, i) => (
                       <span
@@ -990,7 +999,12 @@ export default function Home() {
                   style={{ left: t.x, top: t.y }}
                   aria-hidden="true"
                 >
-                  <Bin />
+                  <span className="bin-hole" />
+                  <div className="bin-well">
+                    <div className="bin-rise">
+                      <Bin />
+                    </div>
+                  </div>
                 </div>
               ),
             )}
