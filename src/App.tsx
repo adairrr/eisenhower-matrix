@@ -112,10 +112,16 @@ const SHORTCUTS: { title: string; keys: [string[], string][] }[] = [
     ],
   },
   {
+    title: "In the editor",
+    keys: [
+      [["⌥", "1–4"], "Move the task to that quadrant"],
+      [["⌘", "Enter"], "Save"],
+    ],
+  },
+  {
     title: "Anywhere",
     keys: [
       [["?"], "Show these shortcuts"],
-      [["⌘", "Enter"], "Save while editing"],
       [["Esc"], "Close a dialog"],
     ],
   },
@@ -1179,6 +1185,13 @@ export default function Home() {
                       e.preventDefault();
                       e.currentTarget.requestSubmit();
                     }
+                    // ⌥1-4 picks the quadrant, even mid-typing. Match the
+                    // physical key: on a Mac, ⌥1 types "¡" rather than "1".
+                    const digit = /^Digit([1-4])$/.exec(e.code);
+                    if (e.altKey && !e.metaKey && !e.ctrlKey && digit) {
+                      e.preventDefault();
+                      setEdit({ ...edit, q: +digit[1] - 1 });
+                    }
                   }}
                 >
                   <div className={`editor-band band-q${edit.q}`}>
@@ -1194,6 +1207,8 @@ export default function Home() {
                           role="radio"
                           aria-checked={edit.q === i}
                           className={`qp qp-${i} ${edit.q === i ? "on" : ""}`}
+                          title={`${q.name} (⌥${i + 1})`}
+                          aria-keyshortcuts={`Alt+${i + 1}`}
                           onClick={() => setEdit({ ...edit, q: i })}
                         >
                           <i />
