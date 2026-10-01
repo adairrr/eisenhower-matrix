@@ -2148,6 +2148,10 @@ button.chip {
 .updated-toast a:hover {
   text-decoration: underline;
 }
+/* The shared rule pins the dialog's link left; in the toast row, center it. */
+.updated-toast a {
+  align-self: center;
+}
 .update-actions {
   display: flex;
   justify-content: flex-end;
