@@ -80,6 +80,8 @@ Now open **http://127.0.0.1:5180** and bookmark it. On a Mac, that last command 
 
 Just want to try it once? Use `npm start` instead of `service:install`.
 
+New versions announce themselves: an **Update** button pops up on the board, shows you what's new, and installs it in one click.
+
 ## The nerdy bits
 
 Other ports, a different data file, Linux, hot-reload development, the CSV column reference and backups: it's all in **[docs/SETUP.md](docs/SETUP.md)**.

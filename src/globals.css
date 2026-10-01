@@ -1990,3 +1990,180 @@ button.chip {
   color: #1f8a63;
   font-weight: 650;
 }
+
+/* ---------- Updates ---------- */
+.update-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 12px 0 10px;
+  border: 1px solid #bfe8d6;
+  border-radius: 999px;
+  background: #e9f8f1;
+  color: #1a7a57;
+  font-size: 13.5px;
+  font-weight: 700;
+  animation: update-pop 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.update-pill:hover {
+  background: #d9f2e6;
+}
+.update-pill b {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #2fbf8f;
+  color: #fff;
+  font-size: 11.5px;
+}
+@keyframes update-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+.update-dialog {
+  max-width: 400px !important;
+  padding: 24px 24px 18px !important;
+  border-radius: 16px !important;
+  gap: 12px !important;
+}
+.update-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.update-head h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+.update-head p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #7b8796;
+}
+.update-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: #e9f8f1;
+  color: #1f9a6f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.update-notes {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 40vh;
+  overflow: auto;
+}
+.update-notes li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #2b3642;
+}
+.update-notes li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2fbf8f;
+}
+.update-link,
+.updated-toast a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 650;
+  color: #243cef;
+}
+.update-link:hover,
+.updated-toast a:hover {
+  text-decoration: underline;
+}
+.update-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+.update-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.update-actions .keep {
+  border: 1px solid #d7dde6;
+  background: #fff;
+  color: #2b3642;
+}
+.update-actions .keep:hover {
+  background: #f4f6f9;
+}
+.update-actions button:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.updated-toast {
+  position: absolute;
+  z-index: 40;
+  left: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 14px;
+  border: 1px solid #dce1e8;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 26px #24324720;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: #2b3642;
+  animation: row-in 0.3s ease-out both;
+}
+.updated-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2fbf8f;
+}
+.updated-toast button {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #8a94a3;
+}
+.updated-toast button:hover {
+  background: #f0f2f6;
+}

@@ -51,6 +51,7 @@ import {
   groupDone,
   whenDone,
 } from "./done-list";
+import { UpdateButton, UpdatedToast } from "./update";
 
 const HEAT_CLASS = ["", "heat-soon", "heat-warm", "heat-hot", "heat-late"];
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -619,6 +620,7 @@ export default function Home() {
           {tasks.filter((t) => !t.done).length} tasks
         </div>
         <div className="header-actions">
+          <UpdateButton />
           <button
             ref={completedBtn}
             className="plain"
@@ -889,6 +891,7 @@ export default function Home() {
             )}
         </div>
       </div>
+      <UpdatedToast />
       <footer>
         <div className="toolbox" ref={toolbox}>
           <button

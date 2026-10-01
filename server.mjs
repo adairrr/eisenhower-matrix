@@ -6,6 +6,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createStore } from './lib/store.mjs';
+import { createUpdater, restartProcess } from './lib/updater.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const dev = process.argv.includes('--dev');
@@ -96,11 +97,43 @@ if (dev) {
   catch { console.error('No build found in dist/. Run `npm run build` first, or `npm run dev`.'); process.exit(1); }
 }
 
-http.createServer((req, res) => {
-  if (new URL(req.url, 'http://x').pathname === '/api/tasks') return api(req, res);
+const updater = createUpdater({ root, dev, restart: () => restartProcess(server) });
+async function updateApi(req, res) {
+  try {
+    if (req.method === 'GET') {
+      const { tag, error, ...info } = await updater.check(new URL(req.url, 'http://x').searchParams.has('force'));
+      return send(res, 200, info);
+    }
+    if (req.method === 'POST') {
+      // Updating runs git and npm, so only this page may ask for it: JSON forces a
+      // CORS preflight for other sites, and the Origin must be the board itself.
+      await readJson(req);
+      const origin = req.headers.origin;
+      if (origin && new URL(origin).host !== req.headers.host) return send(res, 403, { error: 'Forbidden' });
+      return send(res, 200, await updater.apply());
+    }
+    send(res, 405, { error: 'Method not allowed' }, { Allow: 'GET, POST' });
+  } catch (e) {
+    if (e.status) return send(res, e.status, { error: e.message });
+    console.error('Update failed', e);
+    send(res, 500, { error: 'The update did not finish. Nothing was lost; try again, or update by hand.' });
+  }
+}
+
+const server = http.createServer((req, res) => {
+  const path = new URL(req.url, 'http://x').pathname;
+  if (path === '/api/tasks') return api(req, res);
+  if (path === '/api/update') return updateApi(req, res);
   if (vite) return vite.middlewares(req, res);
   serveStatic(req, res).catch(e => { console.error(e); res.writeHead(500); res.end(); });
-}).listen(PORT, HOST, () => {
-  console.log(`Eisenhower board on http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}${dev ? ' (dev)' : ''}`);
+});
+// After a self-restart the old process may still hold the port for a moment.
+let attempts = 0;
+server.on('error', e => {
+  if (e.code === 'EADDRINUSE' && ++attempts <= 20) return setTimeout(() => server.listen(PORT, HOST), 250);
+  throw e;
+});
+server.listen(PORT, HOST, () => {
+  console.log(`Eisenhower board v${updater.current} on http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}${dev ? ' (dev)' : ''}`);
   console.log(`Data file: ${DATA_FILE}`);
 });
