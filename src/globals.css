@@ -1220,6 +1220,8 @@ button.chip {
   left: 296px;
   top: 140px;
   transform-origin: 50% 100%;
+  overflow: visible;
+  filter: drop-shadow(0 2px 3px #18202c47);
   animation:
     bin-in 0.25s ease-out both,
     bin-wobble 0.45s ease-out 1.3s,

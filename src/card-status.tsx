@@ -201,13 +201,19 @@ export function Bin() {
   return (
     <svg viewBox="0 0 44 50" width="44" height="50" aria-hidden="true">
       <g className="bin-lid">
-        <rect x="4" y="6" width="36" height="5" rx="2.5" fill="#8b95a5" />
-        <rect x="17" y="2" width="10" height="5" rx="2" fill="#8b95a5" />
+        <rect x="4" y="6" width="36" height="5" rx="2.5" fill="#2b3642" />
+        <rect x="17" y="2" width="10" height="5" rx="2" fill="#2b3642" />
       </g>
-      <path d="M8 14 H36 L33 48 H11 Z" fill="#aeb6c2" />
+      <path
+        d="M8 14 H36 L33 48 H11 Z"
+        fill="#66727f"
+        stroke="#2b3642"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
       <path
         d="M16 20 V42 M22 20 V42 M28 20 V42"
-        stroke="#8b95a5"
+        stroke="#2b3642"
         strokeWidth="2"
         strokeLinecap="round"
       />

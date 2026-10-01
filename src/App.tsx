@@ -507,7 +507,12 @@ export default function Home() {
     // The bin sits just past the card's bottom-right corner (see .toss-bin).
     const dx = el.offsetWidth / 2 + 44,
       dy = el.offsetHeight / 2 - 10;
-    const ball = "#eef0f4";
+    // The ball is drawn at about a fifth of the card's size, so its outline and
+    // shading are specified large; they read as a 2px rim on the quadrant tints.
+    const ball = "#c3cad5",
+      flat = "0 0 0 0 #4a5563, inset 0 0 0 0 #7b8796, inset 0 0 0 0 #f3f5f8",
+      shaded =
+        "0 0 0 9px #4a5563, inset -38px -26px 60px 0 #7b8796, inset 30px 22px 50px 0 #f3f5f8";
     const crumple = el.animate(
       [
         { offset: 0, transform: "none", borderRadius: "9px" },
@@ -516,24 +521,28 @@ export default function Home() {
           offset: 0.4,
           transform: "scale(.62,.5) rotate(12deg)",
           borderRadius: "40px",
+          boxShadow: flat,
         },
         {
           offset: 0.56,
           transform: "scale(.24) rotate(40deg)",
           borderRadius: "50%",
           background: ball,
+          boxShadow: shaded,
         },
         {
           offset: 0.72,
           transform: `translate(${dx * 0.5}px, -90px) scale(.2) rotate(160deg)`,
           borderRadius: "50%",
           background: ball,
+          boxShadow: shaded,
         },
         {
           offset: 0.9,
           transform: `translate(${dx}px, ${dy - 24}px) scale(.16) rotate(300deg)`,
           borderRadius: "50%",
           background: ball,
+          boxShadow: shaded,
           opacity: 1,
         },
         {
@@ -541,6 +550,7 @@ export default function Home() {
           transform: `translate(${dx}px, ${dy}px) scale(.1) rotate(330deg)`,
           borderRadius: "50%",
           background: ball,
+          boxShadow: shaded,
           opacity: 0,
         },
       ],

@@ -4,6 +4,8 @@ One short bullet per change, newest release first. Add yours under **Unreleased*
 
 ## Unreleased
 
+- Tossing a task: the paper ball and the bin are darker and outlined, so you can see them on every quadrant
+
 ## 0.3.0 — 2026-10-01
 
 - Keyboard shortcuts: N or 1–4 adds a task; E, X or ⌫ edits, completes or deletes the card under your pointer (thanks @adairrr)
