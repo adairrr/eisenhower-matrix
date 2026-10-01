@@ -26,6 +26,10 @@ import {
   type Link,
   quadrants,
   positionFor,
+  quadrantAt,
+  snapTo,
+  QUAD,
+  CARD,
 } from "@/lib/tasks";
 import {
   ageInfo,
@@ -50,6 +54,15 @@ import {
 
 const HEAT_CLASS = ["", "heat-soon", "heat-warm", "heat-hot", "heat-late"];
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+// crypto.randomUUID only exists in secure contexts, so it's missing on plain
+// http hostnames like http://tasks:5180; getRandomValues works everywhere.
+function newId() {
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
 /** Local YYYY-MM-DD for today plus `offset` days. */
 function isoDay(offset: number, now: number) {
   const d = new Date(now);
@@ -151,6 +164,7 @@ export default function Home() {
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const viewport = useRef<HTMLDivElement>(null),
+    toolbox = useRef<HTMLDivElement>(null),
     tasksRef = useRef(tasks),
     viewRef = useRef(view),
     gesture = useRef<any>(null),
@@ -176,10 +190,24 @@ export default function Home() {
   function fit() {
     const r = viewport.current?.getBoundingClientRect();
     if (!r) return;
-    const scale = Math.min((r.width - 48) / 1760, (r.height - 48) / 1460, 1);
+    // Fit the board into the space above the floating toolbar, not behind it.
+    const t = toolbox.current?.getBoundingClientRect();
+    const h = t ? t.top - r.top : r.height;
+    // Frame the drawn content (row labels at x=0 to the right quadrants' edge
+    // at x=1700; column labels at y=130 to the bottom quadrants' edge at
+    // y=1430), not the canvas's empty padding around it.
+    const left = 0,
+      right = 1700,
+      top = 130,
+      bottom = 1430;
+    const scale = Math.min(
+      (r.width - 48) / (right - left),
+      (h - 48) / (bottom - top),
+      1,
+    );
     setView({
-      x: (r.width - 1760 * scale) / 2,
-      y: (r.height - 1460 * scale) / 2,
+      x: (r.width - (right - left) * scale) / 2 - left * scale,
+      y: (h - (bottom - top) * scale) / 2 - top * scale,
       scale,
     });
   }
@@ -290,13 +318,23 @@ export default function Home() {
       setView({ ...g.view, x: g.view.x + dx, y: g.view.y + dy });
       return;
     }
+    // While dragging, keep the card on the board; it snaps into a box on drop.
     const x = Math.max(
-        24,
-        Math.min(1458, g.task.x + dx / viewRef.current.scale),
+        QUAD.x[0],
+        Math.min(
+          QUAD.x[1] + QUAD.w - CARD.w,
+          g.task.x + dx / viewRef.current.scale,
+        ),
       ),
-      y = Math.max(105, Math.min(1236, g.task.y + dy / viewRef.current.scale));
+      y = Math.max(
+        QUAD.y[0],
+        Math.min(
+          QUAD.y[1] + QUAD.h - CARD.h,
+          g.task.y + dy / viewRef.current.scale,
+        ),
+      );
     setTasks((prev) => prev.map((t) => (t.id === g.id ? { ...t, x, y } : t)));
-    setOver((y + 65 >= 795 ? 2 : 0) + (x + 137 >= 880 ? 1 : 0));
+    setOver(quadrantAt(x, y));
   }
   async function end() {
     const g = gesture.current;
@@ -309,9 +347,8 @@ export default function Home() {
       return;
     }
     const moved = tasksRef.current.find((t) => t.id === g.id)!;
-    const q = (moved.y + 65 >= 795 ? 2 : 0) + (moved.x + 137 >= 880 ? 1 : 0);
-    const x = Math.max(q % 2 ? 910 : 48, Math.min(q % 2 ? 1442 : 582, moved.x)),
-      y = Math.max(q >= 2 ? 860 : 230, Math.min(q >= 2 ? 1236 : 606, moved.y));
+    const q = quadrantAt(moved.x, moved.y);
+    const { x, y } = snapTo(q, moved.x, moved.y);
     try {
       await persist({ ...moved, x, y, q });
     } catch (e) {
@@ -321,7 +358,7 @@ export default function Home() {
   }
   function add(q = 0) {
     setEdit({
-      id: crypto.randomUUID(),
+      id: newId(),
       title: "",
       notes: "",
       q,
@@ -637,7 +674,7 @@ export default function Home() {
             <section
               key={q.name}
               className={`quadrant q${i} ${over === i ? "drop-active" : ""}`}
-              style={{ left: i % 2 ? 900 : 40, top: i >= 2 ? 800 : 170 }}
+              style={{ left: QUAD.x[i % 2], top: QUAD.y[i >= 2 ? 1 : 0] }}
             >
               <div className="quad-heading">
                 <button
@@ -853,7 +890,7 @@ export default function Home() {
         </div>
       </div>
       <footer>
-        <div className="toolbox">
+        <div className="toolbox" ref={toolbox}>
           <button
             className={mode === "select" ? "active" : ""}
             aria-label="Select and move cards"

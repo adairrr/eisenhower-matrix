@@ -20,7 +20,13 @@
   --border: #dce1e8;
   --input: #dce1e8;
   --ring: #243cef;
-  --radius: 0.6rem;
+  /* One radius scale for the whole app. Nested corners follow it too:
+     a control inside a surface uses the next step down. */
+  --radius-xs: 6px; /* small controls inside cards and toolbars */
+  --radius-sm: 10px; /* buttons, inputs */
+  --radius-md: 14px; /* surfaces: quadrants, cards, toolbar, rows */
+  --radius-lg: 20px; /* dialogs */
+  --radius: var(--radius-sm);
 }
 @theme inline {
   --color-background: var(--background);
@@ -39,7 +45,10 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-lg: var(--radius);
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
   --font-sans: Arial, Helvetica, sans-serif;
 }
 * {
@@ -144,25 +153,60 @@ article:focus-visible {
   background: #243cef;
   color: white;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 12px 17px;
   font-size: 14px;
   font-weight: 650;
-  box-shadow: 0 2px 4px #243cef20;
+  /* A darker lip underneath that the button sinks into when pressed. */
+  box-shadow:
+    0 2px 0 #1622a0,
+    0 3px 8px #243cef30;
+  transition:
+    background 0.15s,
+    transform 0.2s cubic-bezier(0.3, 1.4, 0.5, 1),
+    box-shadow 0.2s cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 .primary:hover {
   background: #172bc7;
+  box-shadow:
+    0 2px 0 #1622a0,
+    0 4px 12px #243cef38;
+}
+.primary:active:not(:disabled) {
+  background: #1426b0;
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 0 #1622a0,
+    0 1px 3px #243cef30;
+  transition-duration: 0.06s;
 }
 .plain {
   font-size: 14px;
   color: #536071;
   background: none;
-  border: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    box-shadow 0.15s,
+    transform 0.1s;
+}
+.plain:hover {
+  background: #fff;
+  border-color: #dce1e8;
+  box-shadow: 0 2px 6px #24324712;
+}
+.plain:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: none;
+  background: #f7f8fa;
 }
 .plain b {
   background: #f0f2f6;
   padding: 4px 7px;
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
 }
 .board-top {
   display: flex;
@@ -227,7 +271,7 @@ article:focus-visible {
   width: 720px;
   height: 470px;
   border: 1.5px solid;
-  border-radius: 20px;
+  border-radius: var(--radius-md);
   transition: box-shadow 0.15s;
 }
 .q0 {
@@ -250,7 +294,7 @@ article:focus-visible {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 26px;
+  padding: 16px; /* same inset as the cards (INSET in lib/tasks.ts) */
 }
 .quad-heading p {
   font-size: 12px;
@@ -313,10 +357,10 @@ article:focus-visible {
   position: absolute;
   width: 274px;
   min-height: 148px;
-  padding: 15px 17px 10px;
+  padding: 14px 16px;
   background: white;
   border: 1px solid #d4dce8;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   box-shadow:
     0 3px 5px #24324707,
     0 10px 16px #24324704;
@@ -330,8 +374,11 @@ article:focus-visible {
 }
 .task-card.dragging {
   cursor: grabbing;
-  box-shadow: 0 16px 40px #24324730;
-  border: 2px solid #243cef;
+  /* Thicken the border with a ring, not border-width, so the text doesn't shift. */
+  box-shadow:
+    0 0 0 1px #243cef,
+    0 16px 40px #24324730;
+  border-color: #243cef;
   rotate: -1deg;
 }
 .card-top {
@@ -417,7 +464,7 @@ footer {
   background: #fff;
   border: 1px solid #dce1e8;
   padding: 7px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   box-shadow: 0 5px 18px #24324715;
   pointer-events: auto;
 }
@@ -426,7 +473,7 @@ footer {
   border: 0;
   width: 36px;
   height: 36px;
-  border-radius: 7px;
+  border-radius: var(--radius-xs);
   color: #5a6471;
 }
 .toolbox button.active {
@@ -467,7 +514,7 @@ input,
 textarea {
   width: 100%;
   border: 1px solid #d3dbe5;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 11px;
   font: 400 16px Arial;
   color: #19242d;
@@ -507,7 +554,7 @@ textarea {
   border: 1px solid #e8a7af;
   color: #a02837;
   padding: 14px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -594,7 +641,7 @@ textarea {
 
 .note-editor {
   padding: 34px !important;
-  border-radius: 12px !important;
+  border-radius: var(--radius-lg) !important;
   box-shadow: 0 28px 100px #18202c30 !important;
 }
 .note-editor form {
@@ -724,13 +771,13 @@ textarea {
   width: 820px;
 }
 .column-label.later {
-  left: 900px;
+  left: 880px;
 }
 .row-label {
   height: 620px;
 }
 .row-label.less-important {
-  top: 800px;
+  top: 810px;
 }
 
 /* Sources + extra links */
@@ -752,7 +799,7 @@ textarea {
   border: 0;
   background: #f3f5f8;
   color: #435064;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   padding: 5px 10px;
   font-size: 13px;
   gap: 4px;
@@ -777,7 +824,7 @@ textarea {
   border: 0;
   background: none;
   color: #637081;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
 }
 .link-row a:hover,
 .link-row button:hover {
@@ -807,7 +854,7 @@ textarea {
   text-overflow: ellipsis;
   max-width: 190px;
   padding: 2px 6px;
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
   background: #f3f5fb;
 }
 .card-links a:hover {
@@ -835,7 +882,7 @@ textarea {
   align-items: center;
   gap: 5px;
   padding: 3px 9px 3px 7px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 11.5px;
   font-weight: 700;
   line-height: 1.3;
@@ -987,7 +1034,7 @@ button.chip {
   width: 25px;
   height: 25px;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-xs);
   background: transparent;
   color: #9aa4b2;
   opacity: 0;
@@ -1219,13 +1266,13 @@ button.chip {
 .toss-dialog {
   max-width: 380px !important;
   padding: 26px 26px 20px !important;
-  border-radius: 16px !important;
+  border-radius: var(--radius-lg) !important;
   gap: 10px !important;
 }
 .toss-icon {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: #fdecec;
   color: #d63c42;
   display: flex;
@@ -1241,7 +1288,7 @@ button.chip {
 .toss-actions button {
   min-height: 44px;
   padding: 0 18px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 700;
 }
@@ -1257,9 +1304,28 @@ button.chip {
   border: 0;
   background: #d63c42;
   color: #fff;
+  /* Same pressable lip as .primary, in red. */
+  box-shadow:
+    0 2px 0 #9c2328,
+    0 3px 8px #d63c4230;
+  transition:
+    background 0.15s,
+    transform 0.2s cubic-bezier(0.3, 1.4, 0.5, 1),
+    box-shadow 0.2s cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 .toss-actions .toss:hover {
   background: #bf2f35;
+  box-shadow:
+    0 2px 0 #9c2328,
+    0 4px 12px #d63c4238;
+}
+.toss-actions .toss:active {
+  background: #b02a30;
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 0 #9c2328,
+    0 1px 3px #d63c4230;
+  transition-duration: 0.06s;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1275,7 +1341,7 @@ button.chip {
 .done-dialog {
   max-width: 480px !important;
   padding: 26px 24px 18px !important;
-  border-radius: 18px !important;
+  border-radius: var(--radius-lg) !important;
   gap: 14px !important;
 }
 .done-head {
@@ -1389,7 +1455,7 @@ button.chip {
   padding: 10px 10px;
   margin: 0 -10px;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   animation: row-in 0.3s ease-out both;
 }
 .completed-list .done-row:hover {
@@ -1497,7 +1563,7 @@ button.chip {
 /* ---------- Task editor ---------- */
 .editor {
   border: 0 !important;
-  border-radius: 18px !important;
+  border-radius: var(--radius-lg) !important;
   box-shadow: 0 30px 90px #18202c38 !important;
 }
 .editor form {
@@ -1579,7 +1645,7 @@ button.chip {
   width: 36px;
   height: 36px;
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: #637081;
 }
@@ -1616,7 +1682,7 @@ button.chip {
 .editor .editor-notes {
   min-height: 130px;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 14px 16px;
   background: #f6f8fb;
   font-size: 15px;
@@ -1668,7 +1734,7 @@ button.chip {
   height: 34px;
   padding: 0 10px;
   border: 1px solid #dfe4eb;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 13.5px;
   color: #2b3642;
 }
@@ -1722,7 +1788,7 @@ button.chip {
   height: 34px;
   padding: 0 10px;
   border: 1px solid #dfe4eb;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   font-size: 13.5px;
 }
 .editor-foot {
@@ -1740,7 +1806,7 @@ button.chip {
   height: 40px;
   padding: 0 12px;
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: transparent;
   font-size: 13.5px;
   font-weight: 650;
@@ -1763,7 +1829,7 @@ button.chip {
   height: 40px;
   padding: 0 16px;
   border: 1px solid #dfe4eb;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: #fff;
   font-size: 14px;
   font-weight: 650;
@@ -1775,7 +1841,7 @@ button.chip {
 .editor-foot .primary {
   height: 40px;
   padding: 0 20px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
 }
 @media (max-width: 560px) {
   .editor-body {
@@ -1823,7 +1889,7 @@ button.chip {
   padding: 14px 16px 12px;
   border: 1px solid #d4dce8;
   border-left-width: 4px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: #fff;
   box-shadow: 0 6px 16px #2432470d;
   animation: card-open 0.22s ease-out both;
