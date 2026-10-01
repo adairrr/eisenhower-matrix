@@ -2189,10 +2189,8 @@ button.chip {
   }
 }
 .updated-toast {
-  position: absolute;
-  z-index: 40;
-  left: 24px;
-  bottom: 24px;
+  /* Stacks above the toolbar in the footer, so it never covers it. */
+  pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 10px;

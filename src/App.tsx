@@ -1094,8 +1094,8 @@ export default function Home() {
             )}
         </div>
       </div>
-      <UpdatedToast />
       <footer>
+        <UpdatedToast />
         <div className="toolbox" ref={toolbox}>
           <button
             className={mode === "select" ? "active" : ""}
