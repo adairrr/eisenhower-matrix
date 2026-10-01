@@ -13,6 +13,7 @@ import {
   Link2,
   ExternalLink,
   ChevronDown,
+  Keyboard,
 } from "lucide-react";
 import {
   Dialog,
@@ -70,6 +71,54 @@ function isoDay(offset: number, now: number) {
   d.setDate(d.getDate() + offset);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
+
+/** True while the user is typing, so single-key shortcuts stay out of the way. */
+function isTyping(target: EventTarget | null) {
+  const el = target as HTMLElement | null;
+  return (
+    !!el &&
+    (el.isContentEditable ||
+      ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName))
+  );
+}
+const SHORTCUTS: { title: string; keys: [string[], string][] }[] = [
+  {
+    title: "Tasks",
+    keys: [
+      [["N"], "New task"],
+      [["1", "2", "3", "4"], "New task in that quadrant"],
+      [["C"], "Show completed tasks"],
+    ],
+  },
+  {
+    title: "Card under the pointer or focused",
+    keys: [
+      [["E"], "Edit"],
+      [["X"], "Complete"],
+      [["⌫"], "Delete"],
+      [["⌥", "Arrow"], "Move to the next quadrant (focused card)"],
+    ],
+  },
+  {
+    title: "Board",
+    keys: [
+      [["V"], "Select tool"],
+      [["H"], "Hand tool"],
+      [["Space"], "Hold to pan"],
+      [["+"], "Zoom in"],
+      [["−"], "Zoom out"],
+      [["0"], "Reset view"],
+    ],
+  },
+  {
+    title: "Anywhere",
+    keys: [
+      [["?"], "Show these shortcuts"],
+      [["⌘", "Enter"], "Save while editing"],
+      [["Esc"], "Close a dialog"],
+    ],
+  },
+];
 
 function cleanLinks(items: Link[] = []) {
   return items
@@ -179,8 +228,10 @@ export default function Home() {
     [confirmToss, setConfirmToss] = useState<Task | null>(null),
     [bump, setBump] = useState(false),
     [openDone, setOpenDone] = useState<string | null>(null),
+    [help, setHelp] = useState(false),
     [now, setNow] = useState(() => Date.now());
   const cardEls = useRef(new Map<string, HTMLElement>()),
+    hovered = useRef<string | null>(null),
     completedBtn = useRef<HTMLButtonElement>(null);
   const animating = (id: string) =>
     completing.includes(id) || tossing.includes(id);
@@ -233,10 +284,7 @@ export default function Home() {
     const resize = () => fit();
     window.addEventListener("resize", resize);
     const down = (e: KeyboardEvent) => {
-      if (
-        e.code === "Space" &&
-        !["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)
-      ) {
+      if (e.code === "Space" && !isTyping(e.target)) {
         space.current = true;
         e.preventDefault();
       }
@@ -513,6 +561,46 @@ export default function Home() {
   function flip(t: Task) {
     void change({ ...t, aged_from: new Date().toISOString() });
   }
+  /** Single-key shortcuts. Any ⌘/Ctrl/Alt combo is left to the browser (⌘T, ⌘N, …). */
+  const shortcut = useRef<(e: KeyboardEvent) => void>(() => {});
+  shortcut.current = (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target)) return;
+    // Any open dialog, including ones whose state lives elsewhere (update.tsx).
+    if (document.querySelector('[role="dialog"][data-state="open"]')) return;
+    const focused = (document.activeElement as HTMLElement | null)?.closest(
+      "[data-task-id]",
+    ) as HTMLElement | null;
+    const id = focused?.dataset.taskId ?? hovered.current;
+    const card = tasks.find((t) => t.id === id && !t.done && !animating(t.id));
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    let run: (() => void) | null = null;
+    if (key === "+" || key === "=") run = () => zoom(1.25);
+    else if (key === "-" || key === "_") run = () => zoom(0.8);
+    else if (e.repeat) return;
+    else if (key === "?") run = () => setHelp(true);
+    else if (key === "0" || (e.shiftKey && e.code === "Digit1")) run = fit;
+    else if (/^[1-4]$/.test(key) && ready) run = () => add(+key - 1);
+    else if (key === "n" && ready) run = () => add();
+    else if (key === "c") run = () => setCompleted(true);
+    else if (key === "v") run = () => setMode("select");
+    else if (key === "h") run = () => setMode("hand");
+    else if (key === "Escape" && focused) run = () => focused.blur();
+    else if (card && ready) {
+      if (key === "e") run = () => setEdit(card);
+      else if (key === "x") run = () => void complete(card);
+      else if (key === "Backspace" || key === "Delete")
+        run = () => setConfirmToss(card);
+    }
+    if (!run) return;
+    // Also keeps the key from being typed into a dialog that opens on it.
+    e.preventDefault();
+    run();
+  };
+  useEffect(() => {
+    const keys = (e: KeyboardEvent) => shortcut.current(e);
+    window.addEventListener("keydown", keys);
+    return () => window.removeEventListener("keydown", keys);
+  }, []);
   const actionsRef = useRef({ persist, ready });
   actionsRef.current = { persist, ready };
   useEffect(() => {
@@ -624,13 +712,21 @@ export default function Home() {
           <button
             ref={completedBtn}
             className="plain"
+            title="Completed (C)"
+            aria-keyshortcuts="C"
             onClick={() => setCompleted(true)}
           >
             <Check size={17} />
             <span>Completed</span>
             <b className={bump ? "bump" : ""}>{count}</b>
           </button>
-          <button className="primary" disabled={!ready} onClick={() => add()}>
+          <button
+            className="primary"
+            disabled={!ready}
+            title="Add task (N)"
+            aria-keyshortcuts="N"
+            onClick={() => add()}
+          >
             <Plus size={18} /> Add task
           </button>
         </div>
@@ -681,6 +777,8 @@ export default function Home() {
               <div className="quad-heading">
                 <button
                   aria-label={`Add task to ${q.name}`}
+                  title={`Add task here (${i + 1})`}
+                  aria-keyshortcuts={String(i + 1)}
                   disabled={!ready}
                   onClick={() => add(i)}
                 >
@@ -715,12 +813,17 @@ export default function Home() {
                     top: t.y,
                     zIndex: dragging === t.id ? 20 : 2,
                   }}
+                  data-task-id={t.id}
+                  onPointerEnter={() => (hovered.current = t.id)}
+                  onPointerLeave={() => {
+                    if (hovered.current === t.id) hovered.current = null;
+                  }}
                   onPointerDown={(e) => {
                     e.stopPropagation();
                     start(e, t);
                   }}
                   tabIndex={0}
-                  aria-label={`${t.title}. ${quadrants[t.q].name}. Press Enter to edit. Alt plus arrow keys moves between quadrants.`}
+                  aria-label={`${t.title}. ${quadrants[t.q].name}. Press Enter or E to edit, X to complete, Delete to remove. Alt plus arrow keys moves between quadrants.`}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") setEdit(t);
                     if (
@@ -821,6 +924,7 @@ export default function Home() {
                       <button
                         className="card-trash"
                         aria-label={`Delete ${t.title}`}
+                        title="Delete (⌫)"
                         onClick={() => setConfirmToss(t)}
                       >
                         <Trash2 size={14} />
@@ -828,6 +932,7 @@ export default function Home() {
                       <button
                         className="card-check"
                         aria-label={`Complete ${t.title}`}
+                        title="Complete (X)"
                         onClick={() => complete(t)}
                       >
                         <Check size={15} />
@@ -897,6 +1002,8 @@ export default function Home() {
           <button
             className={mode === "select" ? "active" : ""}
             aria-label="Select and move cards"
+            title="Select (V)"
+            aria-keyshortcuts="V"
             onClick={() => setMode("select")}
           >
             <MousePointer2 size={19} />
@@ -904,22 +1011,49 @@ export default function Home() {
           <button
             className={mode === "hand" ? "active" : ""}
             aria-label="Pan canvas"
+            title="Hand (H)"
+            aria-keyshortcuts="H"
             onClick={() => setMode("hand")}
           >
             <Hand size={19} />
           </button>
           <i />
-          <button aria-label="Zoom out" onClick={() => zoom(0.8)}>
+          <button
+            aria-label="Zoom out"
+            title="Zoom out (−)"
+            aria-keyshortcuts="-"
+            onClick={() => zoom(0.8)}
+          >
             <Minus size={17} />
           </button>
           <span>{Math.round(view.scale * 100)}%</span>
-          <button aria-label="Zoom in" onClick={() => zoom(1.25)}>
+          <button
+            aria-label="Zoom in"
+            title="Zoom in (+)"
+            aria-keyshortcuts="+"
+            onClick={() => zoom(1.25)}
+          >
             <Plus size={17} />
           </button>
           <i />
-          <button className="reset-view" aria-label="Reset view" onClick={fit}>
+          <button
+            className="reset-view"
+            aria-label="Reset view"
+            title="Reset view (0)"
+            aria-keyshortcuts="0"
+            onClick={fit}
+          >
             <Maximize size={18} />
             <span>Reset view</span>
+          </button>
+          <i />
+          <button
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
+            aria-keyshortcuts="Shift+?"
+            onClick={() => setHelp(true)}
+          >
+            <Keyboard size={18} />
           </button>
         </div>
       </footer>
@@ -1145,6 +1279,33 @@ export default function Home() {
             >
               Toss it
             </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={help} onOpenChange={setHelp}>
+        <DialogContent className="keys-dialog">
+          <DialogTitle>Keyboard shortcuts</DialogTitle>
+          <DialogDescription>
+            Single keys work anywhere except while you’re typing.
+          </DialogDescription>
+          <div className="keys-grid">
+            {SHORTCUTS.map((g) => (
+              <section key={g.title}>
+                <h3>{g.title}</h3>
+                <dl>
+                  {g.keys.map(([keys, label]) => (
+                    <div key={label}>
+                      <dt>{label}</dt>
+                      <dd>
+                        {keys.map((k) => (
+                          <kbd key={k}>{k}</kbd>
+                        ))}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ))}
           </div>
         </DialogContent>
       </Dialog>
